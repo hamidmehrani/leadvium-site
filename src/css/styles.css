@@ -360,6 +360,12 @@ html[lang="ar"] .heading-md {
   justify-content: space-between;
   gap: 16px;
   min-height: 72px;
+  /* Header chrome spans wider than the page container: the 7-item desktop
+     nav + language switcher + CTA need ~1440px of content width, but the
+     page container caps at 1280px — the controls were squeezed until the
+     CTA wrapped to 4 lines and "EN" broke mid-word (live eye-check
+     2026-11-18). */
+  max-width: 1640px;
 }
 
 .brand-link {
@@ -386,7 +392,7 @@ html[lang="ar"] .heading-md {
 }
 
 .nav-item {
-  padding: 8px 12px;
+  padding: 8px 9px;
   border-radius: var(--radius-sm);
   font-size: 0.91rem;
   font-weight: 500;
@@ -404,6 +410,7 @@ html[lang="ar"] .heading-md {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .lang-switcher {
@@ -413,6 +420,7 @@ html[lang="ar"] .heading-md {
   border: 1px solid var(--border-dark);
   border-radius: 999px;
   padding: 3px;
+  flex-shrink: 0;
 }
 
 .lang-pill {
@@ -422,6 +430,10 @@ html[lang="ar"] .heading-md {
   font-weight: 600;
   color: var(--muted-on-dark);
   transition: all 0.18s ease;
+  /* Never break or shrink: .ltr-code sets overflow-wrap:anywhere, which
+     let "EN" split as E/N when the header was squeezed. */
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .lang-pill.is-active {
   background: var(--cobalt);
@@ -449,6 +461,12 @@ html[lang="ar"] .heading-md {
 .btn-sm {
   padding: 8px 15px;
   font-size: 0.87rem;
+}
+
+/* Header CTA must stay one line: it wrapped to 3–4 lines when squeezed. */
+.header-cta-desktop {
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .btn-primary {
@@ -1480,6 +1498,24 @@ html[lang="ar"] .manifesto-quote {
   line-height: 0.95;
   color: rgba(243, 247, 252, 0.12);
   user-select: none;
+}
+
+/* Header crowding bands (live eye-check 2026-11-18): full nav + switcher +
+   CTA need ~1440px of content width.
+   - <=1560px: hide the header CTA (the hero carries the same CTA).
+   - <=1360px: hide the desktop nav, show the hamburger (was 1080px). */
+@media (max-width: 1560px) {
+  .header-cta-desktop {
+    display: none;
+  }
+}
+@media (max-width: 1360px) {
+  .desktop-nav {
+    display: none;
+  }
+  .mobile-menu-toggle {
+    display: inline-flex;
+  }
 }
 
 /* Responsive Breakpoints (Strict 390px Zero Overflow) */
