@@ -1,0 +1,14 @@
+{
+  "name": "leadvium-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Leadvium (leadvium.pages.dev) — Multilingual Autonomous B2B Lead Generation & Custom Managed Outbound Engine Flagship",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "verify": "node scripts/build.mjs && node scripts/verify-build.mjs",
+    "qa": "node scripts/visual-qa.mjs",
+    "functions:check": "npx wrangler pages functions build ./functions --outdir /tmp/leadvium-worker-check && rm -rf /tmp/leadvium-worker-check",
+    "preview": "npx wrangler pages dev dist --port 8430"
+  }
+}

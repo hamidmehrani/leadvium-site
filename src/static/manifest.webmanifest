@@ -1,0 +1,17 @@
+{
+  "name": "Leadvium — Autonomous B2B Outbound & Revenue Engineering",
+  "short_name": "Leadvium",
+  "description": "Custom Done-For-You B2B lead discovery, 14-page diagnostic intelligence, and grounded multi-channel outreach infrastructure.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#08111D",
+  "theme_color": "#08111D",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

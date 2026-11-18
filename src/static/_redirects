@@ -1,0 +1,8 @@
+/en / 301
+/en/* /:splat 301
+/contact /start/ 301
+/contact/ /start/ 301
+/fa/contact /fa/start/ 301
+/fa/contact/ /fa/start/ 301
+/ar/contact /ar/start/ 301
+/ar/contact/ /ar/start/ 301
