@@ -10,5 +10,8 @@
     "qa": "node scripts/visual-qa.mjs",
     "functions:check": "npx wrangler pages functions build ./functions --outdir /tmp/leadvium-worker-check && rm -rf /tmp/leadvium-worker-check",
     "preview": "npx wrangler pages dev dist --port 8430"
+  },
+  "dependencies": {
+    "resend": "^6.39.0"
   }
 }

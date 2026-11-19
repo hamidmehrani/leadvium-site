@@ -1,8 +1,18 @@
+import { Resend } from "resend";
+
 const ALLOWED_MODES = new Set(["pilot_project", "monthly_managed", "sovereign_pod", "advisory_fit"]);
 
 function cleanText(val, maxLen = 500) {
   if (typeof val !== "string") return "";
   return val.replace(/[\u0000-\u001F\u007F]/g, " ").trim().slice(0, maxLen);
+}
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 export async function onRequestPost(context) {
@@ -80,11 +90,66 @@ export async function onRequestPost(context) {
     ]
   };
 
+  // Email notifications (Resend). Best-effort by design: a mail failure
+  // must never fail the intake itself. No key configured -> skip silently.
+  const emailStatus = { ownerNotified: false, visitorConfirmed: false };
+  const apiKey = context.env?.RESEND_API_KEY;
+  if (apiKey) {
+    try {
+      const resend = new Resend(apiKey);
+      const from = context.env?.LEAD_EMAIL_FROM || "Leadvium <leads@getexvorta.com>";
+      const admin = context.env?.ADMIN_EMAIL || "pmbuzhmehrani@gmail.com";
+
+      const ownerText = [
+        `New Leadvium brief ${referenceId}`,
+        ``,
+        `Company: ${company}`,
+        `Email: ${email}`,
+        `Product: ${product}`,
+        `Website: ${website || "-"}`,
+        `Deal size: ${dealSize || "-"}`,
+        `Handle: ${handle || "-"}`,
+        `Locale: ${locale}`,
+        `Engagement: ${mode}`,
+        `Regions: ${regions.join(", ") || "-"}`,
+        `Channels: ${channels.join(", ") || "-"}`,
+        `Notes: ${notes || "-"}`,
+      ].join("\n");
+      const owner = await resend.emails.send({
+        from,
+        to: admin,
+        subject: `New Leadvium brief ${referenceId} — ${company}`,
+        text: ownerText,
+      });
+      if (!owner.error) emailStatus.ownerNotified = true;
+
+      const visitor = await resend.emails.send({
+        from,
+        to: email,
+        subject: `Your Leadvium brief is in — ${referenceId}`,
+        text: [
+          `Thanks — we've received your brief.`,
+          ``,
+          `Your reference: ${referenceId}`,
+          `Company: ${company}`,
+          ``,
+          `The Leadvium team will review it and reply to this address.`,
+        ].join("\n"),
+        html: `<p>Thanks — we've received your brief.</p><p>Your reference: <strong>${escHtml(referenceId)}</strong><br>Company: ${escHtml(company)}</p><p>The Leadvium team will review it and reply to this address.</p>`,
+      });
+      if (!visitor.error) emailStatus.visitorConfirmed = true;
+    } catch {
+      // Deliberately swallowed: email is best-effort, intake already accepted.
+    }
+  }
+
   return new Response(
     JSON.stringify({
       ok: true,
       referenceId,
-      blueprint: recommendedArchitecture
+      blueprint: recommendedArchitecture,
+      emailSent: emailStatus.ownerNotified,
+      email: emailStatus
     }),
     {
       status: 200,
