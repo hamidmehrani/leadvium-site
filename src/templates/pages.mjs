@@ -1468,7 +1468,289 @@ export function renderStartPage(lang) {
 }
 
 /* ==========================================================================
-   9. 404 NOT FOUND PAGE
+   9. PAY PAGE (/pay/)
+   ========================================================================== */
+
+export function renderPayPage(lang) {
+  const ST = {
+    en: {
+      metaTitle: "Pay Securely with Crypto — Leadvium",
+      metaDesc:
+        "Pay for your Leadvium engagement with crypto: one USD invoice, settled in USDT, on NOWPayments' hosted page — or send USDT directly on TRON.",
+      kicker: "Crypto Checkout · No Card Required",
+      h1: "Pay for your Leadvium engine with crypto.",
+      sub: "One invoice, priced in USD, settled in USDT. You pay on NOWPayments' hosted page — we never see your wallet or your card details.",
+      fPlan: "Choose your engagement",
+      plans: [
+        ["pilot_project", "Custom Pilot Sprint — $2,900 one-time project"],
+        ["monthly_managed", "Managed Growth Retainer — $2,400 / month (first month)"],
+        ["sovereign_pod", "Sovereign Revenue Pod — $4,800 / month (first month)"]
+      ],
+      fEmail: "Work email for your receipt *",
+      pEmail: "founder@company.com",
+      submit: "Create secure invoice & continue to payment",
+      errMsg: "Please choose a plan and enter a valid email address.",
+      creating: "Creating your secure invoice…",
+      manualTitle: "Prefer to pay USDT directly?",
+      manualSub:
+        "Send USDT on the TRON network (TRC-20) to the address below. Put your reference in the transfer memo — without it we cannot match your payment.",
+      manualAddr: "USDT address (TRON / TRC-20):",
+      manualAmt: "Amount:",
+      manualRef: "Reference (transfer memo):",
+      manualNote: "Send exactly the amount above. A partial payment never activates a service.",
+      claimTitle: "Already sent? Submit your transaction hash.",
+      claimTx: "Transaction hash (64 characters)",
+      claimEmail: "Your email *",
+      claimSubmit: "Submit for on-chain verification",
+      claimDone:
+        "✓ Claim received. We will verify it on-chain and confirm by email — nothing is activated until verification passes.",
+      claimErr: "Please enter a 64-character transaction hash and a valid email address.",
+      whyTitle: "Why crypto, not card?",
+      whyBody:
+        "Leadvium is a new business with no registered company yet, so no card processor will onboard us. Crypto is the only way we can take payment today — stated plainly, not hidden. Card payments arrive when the company is registered. Prices are in USD and settlement is in USDT, so the amount you pay is stable. A partial payment never activates a service: if the amount received is short of the invoice, the invoice stays unpaid until you top it up or we refund you.",
+      p2pTitle: "Don't hold crypto yet?",
+      p2pBody:
+        "Buy USDT in a few minutes: use P2P on Binance, Bybit, or OKX with your card or bank transfer, then return here and pay. The purchase is on your own exchange account — your verification, your business, not ours. We do not earn from the exchange and we never ask for your exchange login.",
+      stPaid: "✓ Payment confirmed — thank you.",
+      stAwaiting: "Waiting for payment — your invoice is open.",
+      stPartial:
+        "Partial payment received — the invoice is still unpaid. Top it up or contact us for a refund.",
+      stFailed: "This invoice failed.",
+      stExpired: "This invoice expired unpaid.",
+      stManual: "✓ Claim received — we will verify it on-chain and confirm by email.",
+      stUnknown: "Invoice not found.",
+      stRef: "Order reference:",
+      stPlan: "Plan:",
+      stAmt: "Amount:"
+    },
+    fa: {
+      metaTitle: "پرداخت امن با ارز دیجیتال — لیدویوم",
+      metaDesc:
+        "هزینه همکاری با لیدویوم را با ارز دیجیتال پرداخت کنید: یک فاکتور دلاری با تسویه تتر در صفحه امن درگاه — یا مستقیم تتر بفرستید.",
+      kicker: "پرداخت کریپتویی · بدون نیاز به کارت",
+      h1: "هزینه موتور لیدویوم را با ارز دیجیتال پرداخت کنید.",
+      sub: "یک فاکتور، با قیمت دلاری و تسویه با تتر. پرداخت در صفحه امن درگاه انجام می‌شود — ما هرگز به کیف پول یا اطلاعات کارت شما دسترسی نداریم.",
+      fPlan: "مدل همکاری را انتخاب کنید",
+      plans: [
+        ["pilot_project", "پایلوت اختصاصی (پروژه‌ای) — ۲٬۹۰۰ دلار یک‌باره"],
+        ["monthly_managed", "موتور رشد مدیریت‌شده ماهانه — ۲٬۴۰۰ دلار در ماه (ماه اول)"],
+        ["sovereign_pod", "پاد اختصاصی سازمانی / چندبرندی — ۴٬۸۰۰ دلار در ماه (ماه اول)"]
+      ],
+      fEmail: "ایمیل کاری برای ارسال رسید *",
+      pEmail: "info@company.com",
+      submit: "ساخت فاکتور امن و ادامه به پرداخت",
+      errMsg: "لطفاً مدل همکاری را انتخاب کنید و ایمیل معتبر وارد نمایید.",
+      creating: "در حال ساخت فاکتور امن…",
+      manualTitle: "ترجیح می‌دهید مستقیم تتر بفرستید؟",
+      manualSub:
+        "تتر را روی شبکه ترون به آدرس زیر بفرستید. شناسه رهگیری را در توضیحات تراکنش بنویسید — بدون آن نمی‌توانیم پرداخت شما را تطبیق دهیم.",
+      manualAddr: "آدرس تتر (شبکه ترون):",
+      manualAmt: "مبلغ:",
+      manualRef: "شناسه رهگیری (توضیحات تراکنش):",
+      manualNote: "دقیقاً همین مبلغ را بفرستید. پرداخت ناقص هرگز خدمتی فعال نمی‌کند.",
+      claimTitle: "ارسال کردید؟ هش تراکنش را ثبت کنید.",
+      claimTx: "هش تراکنش (۶۴ کاراکتر)",
+      claimEmail: "ایمیل شما *",
+      claimSubmit: "ثبت برای بررسی روی زنجیره",
+      claimDone:
+        "✓ درخواست شما ثبت شد. روی زنجیره بررسی می‌کنیم و با ایمیل تأیید می‌کنیم — تا پیش از تأیید بررسی، چیزی فعال نمی‌شود.",
+      claimErr: "لطفاً هش تراکنش ۶۴ کاراکتری و ایمیل معتبر وارد نمایید.",
+      whyTitle: "چرا ارز دیجیتال، نه کارت؟",
+      whyBody:
+        "لیدویوم کسب‌وکاری تازه است و هنوز شرکت ثبت‌شده ندارد، پس هیچ درگاه کارتی ما را نمی‌پذیرد. ارز دیجیتال امروز تنها راه دریافت پرداخت ماست — صادقانه گفته شده، نه پنهان. پرداخت کارتی وقتی شرکت ثبت شود اضافه می‌شود. قیمت‌ها دلاری و تسویه با تتر است، پس مبلغ پرداختی ثابت می‌ماند. پرداخت ناقص هرگز خدمتی فعال نمی‌کند: اگر مبلغ دریافتی کمتر از فاکتور باشد، فاکتور پرداخت‌نشده می‌ماند تا تکمیل کنید یا بازپرداخت بگیرید.",
+      p2pTitle: "هنوز ارز دیجیتال ندارید؟",
+      p2pBody:
+        "در چند دقیقه تتر بخرید: در بخش همتابه‌همتای صرافی‌های زیر {names} با کارت بانکی یا انتقال بانکی تتر بخرید و برگردید اینجا پرداخت کنید. خرید روی حساب صرافی خودتان است — احراز هویت شما، کار شما، نه کار ما. ما از صرافی درآمدی نداریم و هرگز اطلاعات ورود شما را نمی‌خواهیم.",
+      p2pNames: "Binance / Bybit / OKX",
+      stPaid: "✓ پرداخت تأیید شد — سپاسگزاریم.",
+      stAwaiting: "در انتظار پرداخت — فاکتور شما باز است.",
+      stPartial:
+        "پرداخت ناقص دریافت شد — فاکتور هنوز پرداخت‌نشده است. تکمیل کنید یا برای بازپرداخت با ما تماس بگیرید.",
+      stFailed: "این فاکتور ناموفق بود.",
+      stExpired: "مهلت این فاکتور گذشت و پرداخت نشد.",
+      stManual: "✓ درخواست شما ثبت شد — روی زنجیره بررسی می‌کنیم و با ایمیل تأیید می‌کنیم.",
+      stUnknown: "فاکتوری یافت نشد.",
+      stRef: "شناسه سفارش:",
+      stPlan: "مدل همکاری:",
+      stAmt: "مبلغ:"
+    },
+    ar: {
+      metaTitle: "ادفع بأمان بالعملات الرقمية — ليدفيوم",
+      metaDesc:
+        "ادفع مقابل تعاقدك مع ليدفيوم بالعملات الرقمية: فاتورة واحدة بالدولار تُسوَّى بعملة USDT على الصفحة المستضافة الآمنة — أو أرسل USDT مباشرة على شبكة ترون.",
+      kicker: "دفع بالعملات الرقمية · بدون بطاقة",
+      h1: "ادفع مقابل محرك ليدفيوم بالعملات الرقمية.",
+      sub: "فاتورة واحدة بالدولار، تُسوَّى بعملة USDT. تتم عملية الدفع على الصفحة المستضافة الآمنة — لا نرى محفظتك أو بيانات بطاقتك أبداً.",
+      fPlan: "اختر نموذج التعاقد",
+      plans: [
+        ["pilot_project", "مشروع الإطلاق التجريبي لمدة 4 أسابيع — $2,900 لمرة واحدة"],
+        ["monthly_managed", "محرك النمو الشهري المُدار — $2,400 / شهرياً (الشهر الأول)"],
+        ["sovereign_pod", "الوحدة السيادية متعددة العلامات — $4,800 / شهرياً (الشهر الأول)"]
+      ],
+      fEmail: "البريد الإلكتروني للعمل لإرسال الإيصال *",
+      pEmail: "founder@company.com",
+      submit: "إنشاء فاتورة آمنة والمتابعة إلى الدفع",
+      errMsg: "يرجى اختيار الخطة وإدخال بريد إلكتروني صحيح.",
+      creating: "جارٍ إنشاء فاتورتك الآمنة…",
+      manualTitle: "تفضل الدفع بعملة USDT مباشرة؟",
+      manualSub:
+        "أرسل USDT على شبكة ترون (TRC-20) إلى العنوان أدناه. ضع المرجع في ملاحظة التحويل — بدونه لا نستطيع مطابقة دفعتك.",
+      manualAddr: "عنوان USDT (شبكة ترون / TRC-20):",
+      manualAmt: "المبلغ:",
+      manualRef: "المرجع (ملاحظة التحويل):",
+      manualNote: "أرسل المبلغ نفسه بالضبط. الدفع الجزئي لا يفعّل أي خدمة أبداً.",
+      claimTitle: "أرسلت بالفعل؟ أرسل رمز التحويل.",
+      claimTx: "رمز التحويل (64 حرفاً)",
+      claimEmail: "بريدك الإلكتروني *",
+      claimSubmit: "إرسال للتحقق على السلسلة",
+      claimDone:
+        "✓ تم استلام الطلب. سنتحقق منه على السلسلة ونؤكده بالبريد الإلكتروني — لا يتم تفعيل أي شيء قبل اكتمال التحقق.",
+      claimErr: "يرجى إدخال رمز تحويل من 64 حرفاً وبريد إلكتروني صحيح.",
+      whyTitle: "لماذا العملات الرقمية وليس البطاقة؟",
+      whyBody:
+        "ليدفيوم مشروع جديد بلا شركة مسجلة بعد، لذا لا يقبلنا أي معالج بطاقات. العملات الرقمية هي الطريقة الوحيدة المتاحة اليوم لقبول الدفع — نذكر ذلك بوضوح ولا نخفيه. ستُضاف مدفوعات البطاقات عند تسجيل الشركة. الأسعار بالدولار والتسوية بعملة USDT، لذا يبقى المبلغ المستحق ثابتاً. الدفع الجزئي لا يفعّل أي خدمة أبداً: إذا كان المبلغ المستلم أقل من الفاتورة، تبقى الفاتورة غير مدفوعة حتى تكملها أو نعيد المبلغ إليك.",
+      p2pTitle: "لا تملك عملات رقمية بعد؟",
+      p2pBody:
+        "اشترِ USDT في دقائق: استخدم التداول من نظير إلى نظير في Binance أو Bybit أو OKX ببطاقتك أو تحويلك البنكي، ثم عد إلى هنا وادفع. الشراء على حسابك الخاص في المنصة — تحققك وهويتك شأنك أنت، وليس شأننا. لا نكسب من المنصة ولا نطلب بيانات دخولك أبداً.",
+      stPaid: "✓ تم تأكيد الدفع — شكراً لك.",
+      stAwaiting: "بانتظار الدفع — فاتورتك مفتوحة.",
+      stPartial:
+        "تم استلام دفعة جزئية — الفاتورة ما زالت غير مدفوعة. أكملها أو تواصل معنا لاسترداد المبلغ.",
+      stFailed: "فشلت هذه الفاتورة.",
+      stExpired: "انتهت صلاحية هذه الفاتورة دون دفع.",
+      stManual: "✓ تم استلام الطلب — سنتحقق منه على السلسلة ونؤكده بالبريد الإلكتروني.",
+      stUnknown: "لم يتم العثور على فاتورة.",
+      stRef: "مرجع الطلب:",
+      stPlan: "نموذج التعاقد:",
+      stAmt: "المبلغ:"
+    }
+  }[lang];
+
+  // Status strings for the client-side receipt view (script content is
+  // exempt from the /fa/ prose audit, so Latin keys are safe here).
+  const statusCopy = {
+    paid: ST.stPaid,
+    awaiting: ST.stAwaiting,
+    partial: ST.stPartial,
+    failed: ST.stFailed,
+    expired: ST.stExpired,
+    manual_pending: ST.stManual,
+    unknown: ST.stUnknown,
+    creating: ST.creating,
+    ref: ST.stRef,
+    plan: ST.stPlan,
+    amount: ST.stAmt
+  };
+
+  const p2pNames = ST.p2pNames
+    ? ` <span class="ltr-code" dir="ltr">${esc(ST.p2pNames)}</span>`
+    : "";
+  const p2pHtml = esc(ST.p2pBody).replace("{names}", p2pNames);
+
+  const bodyHtml = `
+  <section class="lv-section surface-dark">
+    <div class="lv-container">
+      <span class="kicker-pill"><span class="pulse-dot"></span><span>${esc(ST.kicker)}</span></span>
+      <h1 class="display-xl" style="max-width:900px">${esc(ST.h1)}</h1>
+      <p class="lead-prose">${esc(ST.sub)}</p>
+    </div>
+  </section>
+
+  <section class="lv-section surface-light">
+    <div class="lv-container" style="max-width:940px">
+      <div id="pay-status-box" hidden class="estimator-summary-card" style="margin-bottom:24px">
+        <div id="pay-status-text" style="color:#34D399;font-weight:700;font-size:1.1rem"></div>
+        <div style="display:grid;gap:8px;margin-top:14px;font-size:0.92rem">
+          <div><span style="color:var(--muted-on-dark)">${esc(ST.stRef)}</span> <code id="pay-status-ref" class="ltr-code" dir="ltr" style="color:#93C5FD;font-weight:700"></code></div>
+          <div><span style="color:var(--muted-on-dark)">${esc(ST.stPlan)}</span> <strong id="pay-status-plan"></strong></div>
+          <div><span style="color:var(--muted-on-dark)">${esc(ST.stAmt)}</span> <strong id="pay-status-amount"></strong></div>
+        </div>
+      </div>
+
+      <form id="pay-form" class="interactive-workbench" novalidate>
+        <div class="brief-form-grid">
+          <div class="form-field">
+            <label for="pay-plan" class="form-label">${esc(ST.fPlan)}</label>
+            <select id="pay-plan" name="plan" class="form-select">
+              ${ST.plans.map((p) => `<option value="${esc(p[0])}">${esc(p[1])}</option>`).join("")}
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="pay-email" class="form-label">${esc(ST.fEmail)}</label>
+            <input id="pay-email" name="email" type="email" dir="ltr" required class="form-input" placeholder="${esc(
+              ST.pEmail
+            )}">
+          </div>
+        </div>
+
+        <div id="pay-error-box" hidden style="margin-top:16px;padding:13px 16px;border-radius:10px;background:#FEF2F2;border:1px solid #FECACA;color:#991B1B;font-weight:600">
+          ${esc(ST.errMsg)}
+        </div>
+
+        <div style="margin-top:22px">
+          <button id="pay-submit-btn" type="submit" class="btn-primary" style="width:100%" data-magnetic>${esc(
+            ST.submit
+          )}</button>
+        </div>
+      </form>
+
+      <div id="pay-manual-box" hidden class="estimator-summary-card" style="margin-top:24px">
+        <div style="font-weight:700;font-size:1.1rem">${esc(ST.manualTitle)}</div>
+        <p style="margin:10px 0 0;font-size:0.92rem;color:var(--muted-on-dark)">${esc(ST.manualSub)}</p>
+        <div style="display:grid;gap:8px;margin-top:14px;font-size:0.92rem">
+          <div><span style="color:var(--muted-on-dark)">${esc(ST.manualAddr)}</span> <code id="pay-manual-address" class="ltr-code" dir="ltr" style="color:#93C5FD;font-weight:700;word-break:break-all"></code></div>
+          <div><span style="color:var(--muted-on-dark)">${esc(ST.manualAmt)}</span> <strong id="pay-manual-amount"></strong></div>
+          <div><span style="color:var(--muted-on-dark)">${esc(ST.manualRef)}</span> <code id="pay-manual-ref" class="ltr-code" dir="ltr" style="color:#93C5FD;font-weight:700"></code></div>
+        </div>
+        <p style="margin:14px 0 0;font-size:0.89rem;color:var(--muted-on-dark)">${esc(ST.manualNote)}</p>
+
+        <form id="pay-claim-form" style="margin-top:18px" novalidate>
+          <div style="font-weight:700">${esc(ST.claimTitle)}</div>
+          <div class="brief-form-grid" style="margin-top:12px">
+            <div class="form-field">
+              <label for="pay-claim-txhash" class="form-label">${esc(ST.claimTx)}</label>
+              <input id="pay-claim-txhash" name="txHash" type="text" dir="ltr" required class="form-input" placeholder="a1b2…">
+            </div>
+            <div class="form-field">
+              <label for="pay-claim-email" class="form-label">${esc(ST.claimEmail)}</label>
+              <input id="pay-claim-email" name="email" type="email" dir="ltr" required class="form-input" placeholder="${esc(
+                ST.pEmail
+              )}">
+            </div>
+          </div>
+          <div id="pay-claim-error-box" hidden style="margin-top:12px;padding:13px 16px;border-radius:10px;background:#FEF2F2;border:1px solid #FECACA;color:#991B1B;font-weight:600">
+            ${esc(ST.claimErr)}
+          </div>
+          <div style="margin-top:14px">
+            <button id="pay-claim-btn" type="submit" class="btn-primary" style="width:100%">${esc(
+              ST.claimSubmit
+            )}</button>
+          </div>
+          <div id="pay-claim-done-box" hidden style="margin-top:14px;padding:13px 16px;border-radius:10px;background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46;font-weight:600">
+            ${esc(ST.claimDone)}
+          </div>
+        </form>
+      </div>
+
+      <div class="estimator-summary-card" style="margin-top:24px">
+        <div style="font-weight:700;font-size:1.1rem">${esc(ST.whyTitle)}</div>
+        <p style="margin:10px 0 0;font-size:0.92rem;color:var(--muted-on-dark)">${esc(ST.whyBody)}</p>
+      </div>
+
+      <div class="estimator-summary-card" style="margin-top:24px">
+        <div style="font-weight:700;font-size:1.1rem">${esc(ST.p2pTitle)}</div>
+        <p style="margin:10px 0 0;font-size:0.92rem;color:var(--muted-on-dark)">${p2pHtml}</p>
+      </div>
+    </div>
+  </section>
+  <script type="application/json" id="pay-copy">${JSON.stringify(statusCopy)}</script>`;
+
+  return { title: ST.metaTitle, description: ST.metaDesc, bodyHtml };
+}
+
+/* ==========================================================================
+   10. 404 NOT FOUND PAGE
    ========================================================================== */
 export function render404Page() {
   const ui = UI_COPY.en;

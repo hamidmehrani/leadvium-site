@@ -8,6 +8,7 @@ import {
   render404Page,
   renderEnginePage,
   renderHomePage,
+  renderPayPage,
   renderPlatformPage,
   renderPricingPage,
   renderSolutionsPage,
@@ -27,7 +28,8 @@ const ROUTES = [
   { slug: "/pricing/", render: renderPricingPage, priority: "0.9" },
   { slug: "/trust/", render: renderTrustPage, priority: "0.8" },
   { slug: "/work/", render: renderWorkPage, priority: "0.8" },
-  { slug: "/start/", render: renderStartPage, priority: "0.9" }
+  { slug: "/start/", render: renderStartPage, priority: "0.9" },
+  { slug: "/pay/", render: renderPayPage, priority: "0.9" }
 ];
 
 function copyDir(srcDir, destDir) {

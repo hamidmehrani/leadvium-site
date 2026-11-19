@@ -460,4 +460,211 @@
       }
     });
   }
+
+  /* 9. Crypto Checkout (/pay/) -> NOWPayments invoice + manual USDT */
+  var payForm = document.getElementById("pay-form");
+  if (payForm) {
+    var payCopy = {};
+    try {
+      var payCopyEl = document.getElementById("pay-copy");
+      if (payCopyEl) payCopy = JSON.parse(payCopyEl.textContent || "{}");
+    } catch (_) {}
+    var payStatusBox = document.getElementById("pay-status-box");
+    var payStatusText = document.getElementById("pay-status-text");
+    var payStatusRef = document.getElementById("pay-status-ref");
+    var payStatusPlan = document.getElementById("pay-status-plan");
+    var payStatusAmount = document.getElementById("pay-status-amount");
+    var payErrorBox = document.getElementById("pay-error-box");
+    var paySubmitBtn = document.getElementById("pay-submit-btn");
+    var payPlanSel = document.getElementById("pay-plan");
+    var payEmailInput = document.getElementById("pay-email");
+    var payManualBox = document.getElementById("pay-manual-box");
+    var payManualAddress = document.getElementById("pay-manual-address");
+    var payManualAmount = document.getElementById("pay-manual-amount");
+    var payManualRef = document.getElementById("pay-manual-ref");
+    var payClaimForm = document.getElementById("pay-claim-form");
+    var payClaimTx = document.getElementById("pay-claim-txhash");
+    var payClaimEmail = document.getElementById("pay-claim-email");
+    var payClaimError = document.getElementById("pay-claim-error-box");
+    var payClaimDone = document.getElementById("pay-claim-done-box");
+    var payClaimBtn = document.getElementById("pay-claim-btn");
+    var manualReference = null;
+    var statusTimer = null;
+    var statusPolls = 0;
+    var claimSubmitted = false;
+
+    function payStatusLabel(status) {
+      return payCopy[status] || payCopy.unknown || status;
+    }
+
+    function renderPayStatus(data) {
+      if (!payStatusBox) return;
+      payStatusBox.removeAttribute("hidden");
+      if (payStatusText) payStatusText.textContent = payStatusLabel(data.status);
+      if (payStatusRef) payStatusRef.textContent = data.orderId || "";
+      if (payStatusPlan) payStatusPlan.textContent = data.planName || data.plan || "";
+      if (payStatusAmount) {
+        payStatusAmount.textContent = data.amountUSD
+          ? fmt("$" + Number(data.amountUSD).toLocaleString("en-US"))
+          : "";
+      }
+    }
+
+    function pollPayStatus(orderId) {
+      if (!orderId) return;
+      statusPolls = 0;
+      if (statusTimer) clearInterval(statusTimer);
+      var check = function () {
+        statusPolls += 1;
+        fetch("/api/payments/status?invoice=" + encodeURIComponent(orderId))
+          .then(function (res) {
+            return res.json();
+          })
+          .then(function (data) {
+            if (!data || !data.ok) {
+              if (payStatusText) payStatusText.textContent = payStatusLabel("unknown");
+              if (statusTimer) clearInterval(statusTimer);
+              return;
+            }
+            renderPayStatus(data);
+            if (
+              data.status === "paid" ||
+              data.status === "partial" ||
+              data.status === "failed" ||
+              data.status === "expired" ||
+              data.status === "manual_pending"
+            ) {
+              if (statusTimer) clearInterval(statusTimer);
+            }
+          })
+          .catch(function () {});
+        if (statusPolls >= 60 && statusTimer) clearInterval(statusTimer);
+      };
+      check();
+      statusTimer = setInterval(check, 5000);
+    }
+
+    function refreshManual() {
+      if (!payPlanSel || !payManualBox) return;
+      manualReference = null;
+      fetch("/api/payments/manual?plan=" + encodeURIComponent(payPlanSel.value))
+        .then(function (res) {
+          return res.json().then(function (j) {
+            return { ok: res.ok, json: j };
+          });
+        })
+        .then(function (out) {
+          if (!out.ok || !out.json || !out.json.ok) {
+            payManualBox.setAttribute("hidden", "");
+            return;
+          }
+          manualReference = out.json.reference;
+          if (payManualAddress) payManualAddress.textContent = out.json.address || "";
+          if (payManualAmount) {
+            payManualAmount.textContent =
+              fmt("$" + Number(out.json.amountUSD).toLocaleString("en-US")) + " USDT";
+          }
+          if (payManualRef) payManualRef.textContent = out.json.reference || "";
+          payManualBox.removeAttribute("hidden");
+        })
+        .catch(function () {
+          payManualBox.setAttribute("hidden", "");
+        });
+    }
+
+    try {
+      var payParams = new URLSearchParams(window.location.search);
+      var planParam = payParams.get("plan");
+      if (planParam && payPlanSel) payPlanSel.value = planParam;
+      var invoiceParam = payParams.get("invoice");
+      if (invoiceParam) pollPayStatus(invoiceParam);
+    } catch (_) {}
+
+    if (payPlanSel) payPlanSel.addEventListener("change", refreshManual);
+    refreshManual();
+
+    payForm.addEventListener("submit", async function (ev) {
+      ev.preventDefault();
+      if (payErrorBox) payErrorBox.setAttribute("hidden", "");
+      var email = payEmailInput ? String(payEmailInput.value || "").trim() : "";
+      if (
+        !payPlanSel ||
+        !payPlanSel.value ||
+        !email ||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+      ) {
+        if (payErrorBox) payErrorBox.removeAttribute("hidden");
+        return;
+      }
+      var origBtnText = paySubmitBtn ? paySubmitBtn.textContent : "";
+      if (paySubmitBtn) {
+        paySubmitBtn.disabled = true;
+        if (payCopy.creating) paySubmitBtn.textContent = payCopy.creating;
+      }
+      try {
+        var res = await fetch("/api/payments/create-invoice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ plan: payPlanSel.value, email: email })
+        });
+        var data = await res.json().catch(function () {
+          return null;
+        });
+        if (res.ok && data && data.invoiceUrl) {
+          window.location.href = data.invoiceUrl;
+          return;
+        }
+        if (payErrorBox) payErrorBox.removeAttribute("hidden");
+      } catch (_) {
+        if (payErrorBox) payErrorBox.removeAttribute("hidden");
+      } finally {
+        if (paySubmitBtn) {
+          paySubmitBtn.disabled = false;
+          paySubmitBtn.textContent = origBtnText;
+        }
+      }
+    });
+
+    if (payClaimForm) {
+      payClaimForm.addEventListener("submit", async function (ev) {
+        ev.preventDefault();
+        if (payClaimError) payClaimError.setAttribute("hidden", "");
+        var txHash = payClaimTx ? String(payClaimTx.value || "").trim() : "";
+        var claimEmail = payClaimEmail ? String(payClaimEmail.value || "").trim() : "";
+        if (
+          !manualReference ||
+          !/^[0-9a-fA-F]{64}$/.test(txHash) ||
+          !claimEmail ||
+          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(claimEmail)
+        ) {
+          if (payClaimError) payClaimError.removeAttribute("hidden");
+          return;
+        }
+        if (payClaimBtn) payClaimBtn.disabled = true;
+        try {
+          var res = await fetch("/api/payments/manual-claim", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderId: manualReference, txHash: txHash, email: claimEmail })
+          });
+          var data = await res.json().catch(function () {
+            return null;
+          });
+          if (res.ok && data && data.ok) {
+            claimSubmitted = true;
+            if (payClaimDone) payClaimDone.removeAttribute("hidden");
+            payClaimForm.querySelectorAll("input, button").forEach(function (el) {
+              el.disabled = true;
+            });
+          } else if (payClaimError) {
+            payClaimError.removeAttribute("hidden");
+          }
+        } catch (_) {
+          if (payClaimError) payClaimError.removeAttribute("hidden");
+        } finally {
+          if (payClaimBtn && !claimSubmitted) payClaimBtn.disabled = false;
+        }
+      });
+    }
+  }
 })();
